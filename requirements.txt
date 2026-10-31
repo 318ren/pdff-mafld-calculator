@@ -1,5 +1,5 @@
 streamlit
 pandas
-catboost==1.2.7
+catboost==1.2.5
 plotly
 numpy
