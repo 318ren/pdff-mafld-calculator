@@ -54,38 +54,42 @@ with st.sidebar:
 
 # -------------------------- Prediction pipeline --------------------------
 if run_btn:
-    input_data = pd.DataFrame([[
+    var_list = [
         age,ALT,ALB,DBIL,IBIL,TG,HDL,WBC,PLT,PCT,
         Fatpercentage,WC,HR,MIN,BMR,AST,ALP,GGT,TC,
         TBA,LPA,HB,RBC,Weight,BMI,TBIL,LDL
-    ]], columns=feature_names)
+    ]
+    # 校验：检查是否有空值
+    if any(x is None for x in var_list):
+        st.error("Please fill in all clinical features before prediction.")
+    else:
+        input_data = pd.DataFrame([var_list], columns=feature_names)
+        prob = model.predict_proba(input_data)[0]
+        res_df = pd.DataFrame({
+            "Category": ["Class 0","Class 1","Class 2","Class 3"],
+            "Probability": prob
+        })
+        res_df["Probability (%)"] = (res_df["Probability"] * 100).round(1)
 
-    prob = model.predict_proba(input_data)[0]
-    res_df = pd.DataFrame({
-        "Category": ["Class 0","Class 1","Class 2","Class 3"],
-        "Probability": prob
-    })
-    res_df["Probability (%)"] = (res_df["Probability"] * 100).round(1)
+        st.subheader("Prediction results (four-class probabilities)")
+        st.dataframe(res_df, use_container_width=True)
 
-    st.subheader("Prediction results (four-class probabilities)")
-    st.dataframe(res_df, use_container_width=True)
-
-    # Plot (ggplot-style)
-    fig = px.bar(
-        res_df,
-        x="Category",
-        y="Probability",
-        color="Category",
-        text="Probability (%)",
-        range_y=[0, 1],
-        color_discrete_sequence=px.colors.qualitative.Set2
-    )
-    fig.update_traces(texttemplate="%{text}%", textposition="outside")
-    fig.update_layout(
-        title="Probability distribution across categories",
-        title_x=0.5,
-        yaxis_title="Predicted probability",
-        xaxis_title="Outcome category",
-        height=500
-    )
-    st.plotly_chart(fig, use_container_width=True)
+        # Plot (ggplot-style)
+        fig = px.bar(
+            res_df,
+            x="Category",
+            y="Probability",
+            color="Category",
+            text="Probability (%)",
+            range_y=[0, 1],
+            color_discrete_sequence=px.colors.qualitative.Set2
+        )
+        fig.update_traces(texttemplate="%{text}%", textposition="outside")
+        fig.update_layout(
+            title="Probability distribution across categories",
+            title_x=0.5,
+            yaxis_title="Predicted probability",
+            xaxis_title="Outcome category",
+            height=500
+        )
+        st.plotly_chart(fig, use_container_width=True)
