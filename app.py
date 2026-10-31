@@ -34,7 +34,7 @@ with st.sidebar:
     PCT = st.number_input("PCT", value=None, step=0.1)
     Fatpercentage = st.number_input("Fat percentage", value=None, step=0.1)
     WC = st.number_input("Waist circumference", value=None, step=0.1)
-    HR = st.number_input("Heart rate", value=None, step=0.1)
+    HR = st.number_input("Hip circumference", value=None, step=0.1)
     MIN = st.number_input("MIN", value=None, step=0.1)
     BMR = st.number_input("Basal metabolic rate (BMR)", value=None, step=0.1)
     AST = st.number_input("AST", value=None, step=0.1)
