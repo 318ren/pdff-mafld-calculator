@@ -3,26 +3,26 @@ import pandas as pd
 import catboost
 import plotly.express as px
 
-# -------------------------- 加载模型 --------------------------
+# -------------------------- Load model --------------------------
 model = catboost.CatBoostClassifier()
 model.load_model("catboost_model.cbm")
 
-# 特征顺序必须和训练时完全一致！
+# Feature order must be identical to training!
 feature_names = [
     "age","ALT","ALB","DBIL","IBIL","TG","HDL","WBC","PLT","PCT",
     "Fatpercentage","WC","HR","MIN","BMR","AST","ALP","GGT","TC",
     "TBA","LPA","HB","RBC","Weight","BMI","TBIL","LDL"
 ]
 
-# -------------------------- 页面标题 --------------------------
-st.set_page_config(page_title="PDFF MAFLD预测计算器", layout="wide")
-st.title("CatBoost模型预测计算器")
-st.markdown("### 请输入各项临床指标，点击预测获取4分类概率")
+# -------------------------- Page title --------------------------
+st.title("CatBoost-Based Prediction Calculator")
+st.subheader("Input clinical features and click Predict to get four-class probabilities")
+st.caption("Powered by CatBoost, Streamlit, Pandas and Plotly")
 
-# -------------------------- 侧边栏输入框 --------------------------
+# -------------------------- Sidebar inputs --------------------------
 with st.sidebar:
-    st.header("指标输入")
-    age = st.number_input("年龄 age", value=None, step=0.1)
+    st.header("Feature Input")
+    age = st.number_input("Age", value=None, step=0.1)
     ALT = st.number_input("ALT", value=None, step=0.1)
     ALB = st.number_input("ALB", value=None, step=0.1)
     DBIL = st.number_input("DBIL", value=None, step=0.1)
@@ -32,11 +32,11 @@ with st.sidebar:
     WBC = st.number_input("WBC", value=None, step=0.1)
     PLT = st.number_input("PLT", value=None, step=0.1)
     PCT = st.number_input("PCT", value=None, step=0.1)
-    Fatpercentage = st.number_input("脂肪百分比 Fatpercentage", value=None, step=0.1)
-    WC = st.number_input("腰围 WC", value=None, step=0.1)
-    HR = st.number_input("心率 HR", value=None, step=0.1)
+    Fatpercentage = st.number_input("Fat percentage", value=None, step=0.1)
+    WC = st.number_input("Waist circumference", value=None, step=0.1)
+    HR = st.number_input("Heart rate", value=None, step=0.1)
     MIN = st.number_input("MIN", value=None, step=0.1)
-    BMR = st.number_input("基础代谢 BMR", value=None, step=0.1)
+    BMR = st.number_input("Basal metabolic rate (BMR)", value=None, step=0.1)
     AST = st.number_input("AST", value=None, step=0.1)
     ALP = st.number_input("ALP", value=None, step=0.1)
     GGT = st.number_input("GGT", value=None, step=0.1)
@@ -45,14 +45,14 @@ with st.sidebar:
     LPA = st.number_input("LPA", value=None, step=0.1)
     HB = st.number_input("HB", value=None, step=0.1)
     RBC = st.number_input("RBC", value=None, step=0.1)
-    Weight = st.number_input("体重 Weight", value=None, step=0.1)
+    Weight = st.number_input("Weight", value=None, step=0.1)
     BMI = st.number_input("BMI", value=None, step=0.1)
     TBIL = st.number_input("TBIL", value=None, step=0.1)
     LDL = st.number_input("LDL", value=None, step=0.1)
 
-    run_btn = st.button("开始预测", type="primary")
+    run_btn = st.button("Predict", type="primary")
 
-# -------------------------- 预测逻辑 --------------------------
+# -------------------------- Prediction pipeline --------------------------
 if run_btn:
     input_data = pd.DataFrame([[
         age,ALT,ALB,DBIL,IBIL,TG,HDL,WBC,PLT,PCT,
@@ -62,39 +62,30 @@ if run_btn:
 
     prob = model.predict_proba(input_data)[0]
     res_df = pd.DataFrame({
-        "Category": ["Class0","Class1","Class2","Class3"],
+        "Category": ["Class 0","Class 1","Class 2","Class 3"],
         "Probability": prob
     })
-    res_df["Probability(%)"] = (res_df["Probability"] * 100).round(1)
+    res_df["Probability (%)"] = (res_df["Probability"] * 100).round(1)
 
-    st.subheader("预测结果（4分类概率）")
+    st.subheader("Prediction results (four-class probabilities)")
     st.dataframe(res_df, use_container_width=True)
 
-    # 绘图（和ggplot风格接近）
+    # Plot (ggplot-style)
     fig = px.bar(
         res_df,
         x="Category",
         y="Probability",
         color="Category",
-        text="Probability(%)",
+        text="Probability (%)",
         range_y=[0, 1],
         color_discrete_sequence=px.colors.qualitative.Set2
     )
     fig.update_traces(texttemplate="%{text}%", textposition="outside")
     fig.update_layout(
-        title="各分类预测概率分布",
+        title="Probability distribution across categories",
         title_x=0.5,
-        yaxis_title="预测概率",
-        xaxis_title="结局分类",
+        yaxis_title="Predicted probability",
+        xaxis_title="Outcome category",
         height=500
     )
     st.plotly_chart(fig, use_container_width=True)
-
-# -------------------------- 依赖声明文件 requirements.txt --------------------------
-# 新建一个纯文本文件，命名为 requirements.txt，内容如下：
-"""
-catboost
-streamlit
-pandas
-plotly
-"""
